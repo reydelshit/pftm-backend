@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 class DbConnect
 {
     private $server = 'localhost';
-    private $dbname = 'cmhs';
+    private $dbname = 'pftm';
     private $user = 'root';
     private $pass = '';
 
