@@ -13,7 +13,7 @@ switch ($method) {
 
         if (isset($_GET['user_id'])) {
             $user_id = $_GET['user_id'];
-            $sql = "SELECT * FROM farmer WHERE user_id = :user_id";
+            $sql = "SELECT farmer.*, COUNT(pigs.assigned_farmer) AS number_assigned FROM farmer INNER JOIN pigs ON pigs.assigned_farmer = farmer.farmer_name WHERE farmer.user_id = :user_id";
         }
 
         if (isset($_GET['farmer_id'])) {
