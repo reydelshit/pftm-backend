@@ -13,7 +13,7 @@ switch ($method) {
 
         if (isset($_GET['user_id'])) {
             $user_id = $_GET['user_id'];
-            $sql = "SELECT * FROM pigs WHERE user_id = :user_id";
+            $sql = "SELECT pigs.*, buffs.buff_name, buffs.buff_type FROM pigs LEFT JOIN buffs ON buffs.buff_id = pigs.buff_id WHERE pigs.user_id = :user_id";
         }
 
 
@@ -33,8 +33,6 @@ switch ($method) {
         }
 
 
-
-
         if (isset($sql)) {
             $stmt = $conn->prepare($sql);
 
@@ -52,9 +50,6 @@ switch ($method) {
             }
 
 
-
-
-
             $stmt->execute();
             $pigs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -62,17 +57,15 @@ switch ($method) {
         }
 
 
-
         break;
-
 
 
 
 
     case "POST":
         $pig = json_decode(file_get_contents('php://input'));
-        $sql = "INSERT INTO pigs (pig_id, pig_tag, assigned_farmer, building, pen, short_desc, created_at, user_id, pig_type, date_breed, farrowing_date) 
-                VALUES (:pig_id, :pig_tag, :assigned_farmer, :building, :pen, :short_desc, :created_at, :user_id, :pig_type, :date_breed, :farrowing_date)";
+        $sql = "INSERT INTO pigs (pig_id, pig_tag, assigned_farmer, building, pen, short_desc, created_at, user_id, pig_type, date_breed, farrowing_date, buff_id) 
+                VALUES (:pig_id, :pig_tag, :assigned_farmer, :building, :pen, :short_desc, :created_at, :user_id, :pig_type, :date_breed, :farrowing_date, :buff_id)";
 
         $stmt = $conn->prepare($sql);
 
@@ -87,6 +80,9 @@ switch ($method) {
         $stmt->bindParam(':user_id', $pig->user_id);
         $stmt->bindParam(':pig_type', $pig->pig_type);
         $stmt->bindParam(':date_breed', $pig->date_breed);
+        $stmt->bindParam(':buff_id', $pig->buff_id);
+
+
 
         if (!empty($pig->date_breed)) {
             $date_breed = new DateTime($pig->date_breed);
