@@ -40,15 +40,14 @@ switch ($method) {
 
     case "POST":
         $account = json_decode(file_get_contents('php://input'));
-        $sql = "INSERT INTO users (user_id, name, username, password, account_type, created_at) 
-            VALUES (null, :name, :username, :password, :account_type, :created_at)";
+        $sql = "INSERT INTO users (user_id, name, username, password, created_at) 
+            VALUES (null, :name, :username, :password, :created_at)";
 
         $stmt = $conn->prepare($sql);
         $created_at = date('Y-m-d');
         $stmt->bindParam(':name', $account->name);
         $stmt->bindParam(':username', $account->username);
         $stmt->bindParam(':password', $account->password);
-        $stmt->bindParam(':account_type', $account->account_type);
         $stmt->bindParam(':created_at', $created_at);
 
 
