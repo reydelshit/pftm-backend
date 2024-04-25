@@ -16,6 +16,17 @@ switch ($method) {
             $sql = "SELECT * FROM pigs WHERE user_id = :user_id";
         }
 
+
+        if (isset($_GET['user_id']) && isset($_GET['latest_eartag'])) {
+            $user_id = $_GET['user_id'];
+            $sql = "SELECT 
+                    MAX(pig_tag) AS latest_eartag
+                FROM pigs
+                WHERE user_id = :user_id";
+        }
+
+
+
         if (isset($_GET['pig_id'])) {
             $pig_id = $_GET['pig_id'];
             $sql = "SELECT * FROM pigs WHERE pig_id = :pig_id";
@@ -31,9 +42,16 @@ switch ($method) {
                 $stmt->bindParam(':pig_id', $pig_id);
             }
 
+
             if (isset($user_id)) {
                 $stmt->bindParam(':user_id', $user_id);
             }
+
+            if (isset($_GET['user_id']) && isset($_GET['latest_eartag'])) {
+                $stmt->bindParam(':user_id', $user_id);
+            }
+
+
 
 
 
@@ -53,13 +71,11 @@ switch ($method) {
 
     case "POST":
         $pig = json_decode(file_get_contents('php://input'));
-        // Prepare SQL statement
-        $sql = "INSERT INTO pigs (pig_id, pig_tag, assigned_farmer, building, pen, short_desc, created_at, user_id) 
-                VALUES (:pig_id, :pig_tag, :assigned_farmer, :building, :pen, :short_desc, :created_at, :user_id)";
+        $sql = "INSERT INTO pigs (pig_id, pig_tag, assigned_farmer, building, pen, short_desc, created_at, user_id, pig_type, date_breed, farrowing_date) 
+                VALUES (:pig_id, :pig_tag, :assigned_farmer, :building, :pen, :short_desc, :created_at, :user_id, :pig_type, :date_breed, :farrowing_date)";
 
         $stmt = $conn->prepare($sql);
 
-        // Bind parameters
         $created_at = date('Y-m-d H:i:s');
         $stmt->bindParam(':pig_id', $pig->pig_id);
         $stmt->bindParam(':pig_tag', $pig->pig_tag);
@@ -69,6 +85,18 @@ switch ($method) {
         $stmt->bindParam(':short_desc', $pig->short_desc);
         $stmt->bindParam(':created_at', $created_at);
         $stmt->bindParam(':user_id', $pig->user_id);
+        $stmt->bindParam(':pig_type', $pig->pig_type);
+        $stmt->bindParam(':date_breed', $pig->date_breed);
+
+        if (!empty($pig->date_breed)) {
+            $date_breed = new DateTime($pig->date_breed);
+            $date_breed->add(new DateInterval('P112D'));
+            $farrowing_date = $date_breed->format('Y-m-d');
+            $stmt->bindParam(':farrowing_date', $farrowing_date);
+        } else {
+            $stmt->bindValue(':farrowing_date', null, PDO::PARAM_NULL);
+        }
+
 
 
         // Execute statement
@@ -89,14 +117,15 @@ switch ($method) {
 
     case "PUT":
         $pigs = json_decode(file_get_contents('php://input'));
-        $sql = "UPDATE pig 
+        $sql = "UPDATE pigs
         SET 
             pig_tag = :pig_tag,
             assigned_farmer = :assigned_farmer,
             building = :building,
             pen = :pen,
-            short_desc = :short_desc
-            user_id = :user_id
+            short_desc = :short_desc,
+            user_id = :user_id,
+            pig_type = :pig_type
         WHERE
             pig_id = :pig_id";
 
@@ -111,6 +140,7 @@ switch ($method) {
         $stmt->bindParam(':short_desc', $pigs->short_desc);
         $stmt->bindParam(':user_id', $pigs->user_id);
         $stmt->bindParam(':pig_id', $pigs->pig_id);
+        $stmt->bindParam(':pig_type', $pigs->pig_type);
 
         if ($stmt->execute()) {
             $response = [
