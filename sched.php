@@ -13,7 +13,7 @@ switch ($method) {
 
         if (isset($_GET['user_id'])) {
             $user_id = $_GET['user_id'];
-            $sql = "SELECT * FROM sched WHERE user_id = :user_id";
+            $sql = "SELECT sched.*, pigs.assigned_farmer FROM sched INNER JOIN pigs ON pigs.pig_tag = sched.pig_id WHERE sched.user_id =  :user_id";
         }
 
         if (isset($_GET['sched_id'])) {
@@ -54,14 +54,15 @@ switch ($method) {
     case "POST":
         $schedule = json_decode(file_get_contents('php://input'));
 
-        $sql = "INSERT INTO sched (sched_id, sched_name, pig_id, sched_date, created_at, user_id) 
-                VALUES (:sched_id, :sched_name, :pig_id, :sched_date, :created_at, :user_id)";
+        $sql = "INSERT INTO sched (sched_id, sched_name, category, pig_id, sched_date, created_at, user_id) 
+                VALUES (:sched_id, :sched_name, :category, :pig_id, :sched_date, :created_at, :user_id)";
 
         $stmt = $conn->prepare($sql);
 
         $created_at = date('Y-m-d H:i:s');
         $stmt->bindParam(':sched_id', $schedule->sched_id);
         $stmt->bindParam(':sched_name', $schedule->sched_name);
+        $stmt->bindParam(':category', $schedule->category);
         $stmt->bindParam(':pig_id', $schedule->pig_id);
         $stmt->bindParam(':sched_date', $schedule->sched_date);
         $stmt->bindParam(':created_at', $created_at);
@@ -88,6 +89,7 @@ switch ($method) {
         $sql = "UPDATE sched 
         SET 
             sched_name = :sched_name,
+            category = :category,
             pig_id = :pig_id,
             sched_date = :sched_date,
             user_id = :user_id
@@ -98,6 +100,7 @@ switch ($method) {
 
         $created_at = date('Y-m-d H:i:s');
         $stmt->bindParam(':sched_name', $schedule->sched_name);
+        $stmt->bindParam(':category', $schedule->category);
         $stmt->bindParam(':pig_id', $schedule->pig_id);
         $stmt->bindParam(':sched_date', $schedule->sched_date);
         $stmt->bindParam(':user_id', $schedule->user_id);
