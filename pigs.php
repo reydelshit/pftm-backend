@@ -13,7 +13,7 @@ switch ($method) {
 
         if (isset($_GET['user_id'])) {
             $user_id = $_GET['user_id'];
-            $sql = "SELECT pigs.*, buffs.buff_name, buffs.buff_type FROM pigs LEFT JOIN buffs ON buffs.buff_id = pigs.buff_id WHERE pigs.user_id = :user_id";
+            $sql = "SELECT pigs.*, buffs.buff_name, buffs.buff_type FROM pigs LEFT JOIN buffs ON buffs.buff_id = pigs.buff_id WHERE pigs.user_id = :user_id ORDER BY pigs.created_at DESC";
         }
 
 
@@ -83,7 +83,6 @@ switch ($method) {
         $stmt->bindParam(':buff_id', $pig->buff_id);
 
 
-
         if (!empty($pig->date_breed)) {
             $date_breed = new DateTime($pig->date_breed);
             $date_breed->add(new DateInterval('P112D'));
@@ -97,6 +96,40 @@ switch ($method) {
 
         // Execute statement
         if ($stmt->execute()) {
+
+            $pig_id = $conn->lastInsertId();
+            $sql2 = "INSERT INTO sched (sched_id, sched_name, category, pig_id, sched_date, created_at, user_id) 
+            VALUES (NULL, :sched_name, :category, :pig_id, :sched_date, :created_at, :user_id)";
+
+            $stmt2 = $conn->prepare($sql2);
+
+            $sched_name = "Breeding";
+            $category = "Breeding";
+
+            $created_ats = date('Y-m-d H:i:s');
+            $stmt2->bindParam(':sched_name', $sched_name);
+            $stmt2->bindParam(':category', $category);
+            $stmt2->bindParam(':pig_id', $pig->pig_tag);
+            $stmt2->bindParam(':sched_date', $pig->date_breed);
+            $stmt2->bindParam(':created_at', $created_ats);
+            $stmt2->bindParam(':user_id', $pig->user_id);
+
+
+
+            if ($stmt2->execute()) {
+                $response = [
+                    "status" => "success",
+                    "message" => "Pig breeding successfully"
+                ];
+            } else {
+                $response = [
+                    "status" => "error",
+                    "message" => "Failed to insert pig breeding"
+                ];
+            }
+
+
+
             $response = [
                 "status" => "success",
                 "message" => "Pig inserted successfully"
