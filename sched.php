@@ -122,19 +122,19 @@ switch ($method) {
 
     case "DELETE":
         $sched = json_decode(file_get_contents('php://input'));
-        $sql = "DELETE FROM sched WHERE sched_id = :sched_id";
+        $sql = "DELETE FROM sched WHERE event_id = :event_id";
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':sched_id', $sched->sched_id);
+        $stmt->bindParam(':event_id', $sched->event_id);
 
         if ($stmt->execute()) {
             $response = [
                 "status" => "success",
-                "message" => "sched_id deleted successfully"
+                "message" => "event_id deleted successfully"
             ];
         } else {
             $response = [
                 "status" => "error",
-                "message" => "sched_id delete failed"
+                "message" => "event_id delete failed"
             ];
         }
 
