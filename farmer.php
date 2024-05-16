@@ -13,7 +13,12 @@ switch ($method) {
 
         if (isset($_GET['user_id'])) {
             $user_id = $_GET['user_id'];
-            $sql = "SELECT farmer.*, COUNT(pigs.assigned_farmer) AS number_assigned FROM farmer INNER JOIN pigs ON pigs.assigned_farmer = farmer.farmer_name WHERE farmer.user_id = :user_id";
+            $sql = "SELECT farmer.farmer_name, 
+            COUNT(pigs.assigned_farmer) AS number_assigned 
+            FROM farmer 
+            LEFT JOIN pigs ON pigs.assigned_farmer = farmer.farmer_name 
+            WHERE farmer.user_id = :user_id
+            GROUP BY farmer.farmer_name;";
         }
 
         if (isset($_GET['farmer_id'])) {
@@ -54,15 +59,14 @@ switch ($method) {
     case "POST":
         $farmer = json_decode(file_get_contents('php://input'));
 
-        $sql = "INSERT INTO farmer (farmer_id, farmer_name, no_assigned_pigs, created_at, user_id) 
-                VALUES (:farmer_id, :farmer_name, :no_assigned_pigs, :created_at, :user_id)";
+        $sql = "INSERT INTO farmer (farmer_id, farmer_name, created_at, user_id) 
+                VALUES (:farmer_id, :farmer_name, :created_at, :user_id)";
 
         $stmt = $conn->prepare($sql);
 
         $created_at = date('Y-m-d H:i:s');
         $stmt->bindParam(':farmer_id', $farmer->farmer_id);
         $stmt->bindParam(':farmer_name', $farmer->farmer_name);
-        $stmt->bindParam(':no_assigned_pigs', $farmer->no_assigned_pigs);
         $stmt->bindParam(':created_at', $created_at);
         $stmt->bindParam(':user_id', $farmer->user_id);
 
