@@ -67,6 +67,26 @@ switch ($method) {
             $stmt2->execute();
 
 
+            $initial_start_date = strtotime($calendar->start);
+
+            for ($i = 1; $i <= 5; $i++) {
+                $next_month_start = date('Y-m-d', strtotime("+$i month", $initial_start_date));
+
+                $random_gap = rand(1, 2);
+
+                $next_month_end = date('Y-m-d', strtotime("+$random_gap days", strtotime($next_month_start)));
+
+                $stmt->bindParam(':calendar_title', $calendar->calendar_title);
+                $stmt->bindParam(':start', $next_month_start);
+                $stmt->bindParam(':end', $next_month_end);
+                $stmt->bindParam(':allDay', $calendar->allDay);
+                $stmt->bindParam(':account_id', $calendar->account_id);
+                $stmt->bindParam(':pig_tag', $calendar->pig_tag);
+
+                $stmt->execute();
+            }
+
+
             $response = [
                 "status" => "success",
                 "message" => "calendar created successfully"

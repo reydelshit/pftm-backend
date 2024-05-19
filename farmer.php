@@ -17,7 +17,7 @@ switch ($method) {
             COUNT(pigs.assigned_farmer) AS number_assigned, farmer.created_at, farmer.farmer_id 
             FROM farmer 
             LEFT JOIN pigs ON pigs.assigned_farmer = farmer.farmer_name 
-            WHERE farmer.user_id = user_id
+            WHERE farmer.user_id = :user_id
             GROUP BY farmer.farmer_name;";
         }
 
